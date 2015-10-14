@@ -1,0 +1,10 @@
+name: default
+dependencies:
+  - docopt
+  - futures
+  - jsonschema
+  - pip
+  - pyasn1
+  - pygments
+  - six
+  - virtualenv
