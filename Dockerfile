@@ -26,3 +26,12 @@ ENV PATH /opt/conda/bin:$PATH
 RUN echo 'export PATH=/opt/conda/bin:$PATH' >> /etc/profile.d/conda.sh && \
     conda update --all --yes && \
     conda install pip virtualenv --yes
+
+COPY miniconda.sh /usr/local/bin/
+RUN adduser -D conda
+RUN chmod +x /usr/local/bin/miniconda.sh
+
+WORKDIR /home/conda
+USER conda
+
+ENTRYPOINT ["/usr/local/bin/miniconda.sh"]
