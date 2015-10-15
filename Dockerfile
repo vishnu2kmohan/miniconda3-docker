@@ -32,7 +32,7 @@ ENV PATH /opt/conda/bin:$PATH
 
 RUN echo 'export PATH=/opt/conda/bin:$PATH' >> /etc/profile.d/conda.sh && \
     conda update --all --yes && \
-    conda install pip virtualenv --yes
+    conda install pip virtualenv anaconda-client --yes
 
 COPY miniconda.sh /usr/local/bin/
 RUN adduser -D conda
