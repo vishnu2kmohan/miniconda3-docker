@@ -42,5 +42,6 @@ RUN chmod +x /usr/local/bin/miniconda.sh
 
 WORKDIR /home/conda
 USER conda
+RUN conda create -n local_conda --clone=/opt/conda
 
 ENTRYPOINT ["/usr/local/bin/miniconda.sh"]
