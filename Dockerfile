@@ -54,7 +54,8 @@ WORKDIR ${CONDA_HOME}
 USER conda
 RUN conda create -n local_conda --clone=${CONDA_DIR}
 
-COPY miniconda.sh /usr/local/bin/
-
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/usr/local/bin/miniconda.sh"]
+
+# Add local files as late as possible to stay cache friendly
+COPY miniconda.sh /usr/local/bin/
