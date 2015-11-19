@@ -33,6 +33,7 @@ RUN apk --update add \
     libxext \
     libxrender \
     openssh-client \
+    readline \
     && apk add --update --repository ${ALPINE_EDGE_TESTING_REPO} tini \
     && cd /tmp \
     && wget ${ALPINE_GLIBC_BASE_URL}/${ALPINE_GLIBC_PACKAGE} ${ALPINE_GLIBC_BASE_URL}/${ALPINE_GLIBC_BIN_PACKAGE} \
