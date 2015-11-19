@@ -55,7 +55,6 @@ USER conda
 RUN conda create -n local_conda --clone=${CONDA_DIR}
 
 COPY miniconda.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/miniconda.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/usr/local/bin/miniconda.sh"]
