@@ -1,7 +1,8 @@
 #!/bin/bash
 
+source $HOME/.bash_profile
+source activate root
 conda info
 conda list
 conda env list
-source activate conda3
 bash
