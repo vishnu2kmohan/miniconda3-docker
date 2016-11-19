@@ -6,7 +6,7 @@ MAINTAINER Vishnu Mohan <vishnu@mesosphere.com>
 
 ENV CONDA_INSTALL_DIR=/opt/conda \
     CONDA_INSTALLER=Miniconda3-4.2.12-Linux-x86_64.sh \
-    CONDA_MD5=874dbb0d3c7ec665adf7231bbb575ab2 \
+    CONDA_MD5=d0c7c71cc5659e54ab51f2005a8d96f3 \
     CONDA_UID=1000 \
     CONDA_URL=https://repo.continuum.io/miniconda \
     CONDA_USER=conda \
