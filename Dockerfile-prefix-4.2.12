@@ -21,7 +21,7 @@ ENV CONDA_INSTALL_DIR=/opt/conda \
     SHELL=/bin/bash \
     TINI_GPG_KEY=6380DC428747F6C393FEACA59A84159D7001A4E5 \
     TINI_URL=https://github.com/krallin/tini/releases/download \
-    TINI_VERSION=v0.10.0
+    TINI_VERSION=v0.13.2
 
 RUN echo "deb $REPO/debian jessie main\ndeb $REPO/debian-security jessie/updates main" \
     > /etc/apt/sources.list \
