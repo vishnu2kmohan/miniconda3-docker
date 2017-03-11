@@ -1,11 +1,11 @@
-# debian:8.6 - linux; amd64
-# https://github.com/docker-library/repo-info/blob/master/repos/debian/tag-details.md#debian86
-FROM debian@sha256:c1ce85a0f7126a3b5cbf7c57676b01b37c755b9ff9e2f39ca88181c02b985724
+# debian:8.7 - linux; amd64
+# https://github.com/docker-library/repo-info/blob/master/repos/debian/tag-details.md#debian87
+FROM debian@sha256:52af198afd8c264f1035206ca66a5c48e602afb32dc912ebf9e9478134601ec4
 
 MAINTAINER Vishnu Mohan <vishnu@mesosphere.com>
 
-ENV CONDA_INSTALLER=Miniconda3-4.2.12-Linux-x86_64.sh \
-    CONDA_MD5=d0c7c71cc5659e54ab51f2005a8d96f3 \
+ENV CONDA_INSTALLER=Miniconda3-4.3.11-Linux-x86_64.sh \
+    CONDA_MD5=1924c8d9ec0abf09005aa03425e9ab1a \
     CONDA_UID=1000 \
     CONDA_URL=https://repo.continuum.io/miniconda \
     CONDA_USER=conda \
@@ -19,7 +19,7 @@ ENV CONDA_INSTALLER=Miniconda3-4.2.12-Linux-x86_64.sh \
     SHELL=/bin/bash \
     TINI_GPG_KEY=6380DC428747F6C393FEACA59A84159D7001A4E5 \
     TINI_URL=https://github.com/krallin/tini/releases/download \
-    TINI_VERSION=v0.13.2
+    TINI_VERSION=v0.14.0
 
 RUN echo "deb $REPO/debian jessie main\ndeb $REPO/debian-security jessie/updates main" \
     > /etc/apt/sources.list \
