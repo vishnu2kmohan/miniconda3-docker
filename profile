@@ -8,12 +8,16 @@
 # for ssh logins, install and configure the libpam-umask package.
 #umask 022
 
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi
 
-# set PATH so it includes conda
+# set PATH so it includes conda's bin if it exists
 if [ -d "$HOME/conda/bin" ] ; then
     PATH="$HOME/conda/bin:$PATH"
 fi
