@@ -1,43 +1,57 @@
-# debian:8.7 - linux; amd64
-# https://github.com/docker-library/repo-info/blob/master/repos/debian/tag-details.md#debian87
-FROM debian@sha256:52af198afd8c264f1035206ca66a5c48e602afb32dc912ebf9e9478134601ec4
+# debian:9.2 - linux; amd64
+# https://github.com/docker-library/repo-info/blob/master/repos/debian/tag-details.md#debian92
+FROM debian@sha256:26b2647845d66e20eeadf73d1c302a4ffd2cc9a74c39a52f2aced4f823484328
 
 MAINTAINER Vishnu Mohan <vishnu@mesosphere.com>
 
-ENV CONDA_INSTALLER=Miniconda3-4.3.11-Linux-x86_64.sh \
-    CONDA_MD5=1924c8d9ec0abf09005aa03425e9ab1a \
-    CONDA_UID=1000 \
-    CONDA_URL=https://repo.continuum.io/miniconda \
-    CONDA_USER=conda \
-    CONDA_USER_HOME=/home/conda \
-    DEBIAN_FRONTEND=noninteractive \
-    GPG_KEYSERVER=ha.pool.sks-keyservers.net \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
-    REPO=http://cdn-fastly.deb.debian.org \
-    SHELL=/bin/bash \
-    TINI_GPG_KEY=6380DC428747F6C393FEACA59A84159D7001A4E5 \
-    TINI_URL=https://github.com/krallin/tini/releases/download \
-    TINI_VERSION=v0.14.0
+ARG CONDA_DIR="/home/conda/conda"
+ARG CONDA_GID="100"
+ARG CONDA_INSTALLER="Miniconda3-4.3.30-Linux-x86_64.sh"
+ARG CONDA_MD5="0b80a152332a4ce5250f3c09589c7a81"
+ARG CONDA_UID="1000"
+ARG CONDA_URL="https://repo.continuum.io/miniconda"
+ARG CONDA_USER="conda"
+ARG CONDA_USER_HOME="/home/conda"
+ARG DISTRO="debian"
+ARG CODENAME="stretch"
+ARG DEBIAN_FRONTEND="noninteractive"
+ARG GPG_KEYSERVER="hkps://pgp.mit.edu"
+ARG REPO="http://cdn-fastly.deb.debian.org"
+ARG TINI_GPG_KEY="6380DC428747F6C393FEACA59A84159D7001A4E5"
+ARG TINI_URL="https://github.com/krallin/tini/releases/download"
+ARG TINI_VERSION="v0.16.1"
 
-RUN echo "deb $REPO/debian jessie main\ndeb $REPO/debian-security jessie/updates main" \
-    > /etc/apt/sources.list \
+ENV CODENAME=${CODENAME:-"stretch"} \
+    CONDA_DIR=${CONDA_DIR:-"/home/conda/conda"} \
+    CONDA_USER=${CONDA_USER:-"conda"} \
+    CONDA_USER_HOME=${CONDA_USER_HOME:-"/home/conda"} \
+    DISTRO=${DISTRO:-"debain"} \
+    GPG_KEYSERVER=${GPG_KEYSERVER:-"hkps://pgp.mit.edu"} \
+    LANG="en_US.UTF-8" \
+    LANGUAGE="en_US.UTF-8" \
+    LC_ALL="en_US.UTF-8" \
+    SHELL="/bin/bash"
+
+RUN echo "deb ${REPO}/${DISTRO} ${CODENAME} main" \
+         >> /etc/apt/sources.list \
+    echo "deb ${REPO}/${DISTRO}-security ${CODENAME}/updates main" \
+         >> /etc/apt/sources.list \
     && apt-get update -yq --fix-missing && apt-get -yq dist-upgrade \
     && apt-get install -yq --no-install-recommends locales \
     && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
     && locale-gen \
     && apt-get install -yq --no-install-recommends \
+       apt-utils \
        bash-completion \
        bzip2 \
        ca-certificates \
        curl \
+       dirmngr \
+       fonts-dejavu \
+       fonts-liberation \
        git \
+       gnupg \
        jq \
-       libglib2.0-0 \
-       libsm6 \
-       libxext6 \
-       libxrender1 \
        openssh-client \
        sudo \
        unzip \
@@ -48,26 +62,31 @@ RUN echo "deb $REPO/debian jessie main\ndeb $REPO/debian-security jessie/updates
     && rm -rf /var/apt/lists/*
 
 RUN cd /tmp \
-    && curl -fsSL "$TINI_URL/$TINI_VERSION/tini" -o /usr/local/bin/tini \
-    && curl -fsSL -O "$TINI_URL/$TINI_VERSION/tini.asc" \
+    && curl --retry 3 -fsSL "$TINI_URL/$TINI_VERSION/tini" -o /usr/bin/tini \
+    && curl --retry 3 -fsSL -O "$TINI_URL/$TINI_VERSION/tini.asc" \
     && export GNUPGHOME="$(mktemp -d)" \
     && gpg --keyserver "$GPG_KEYSERVER" --recv-keys "$TINI_GPG_KEY" \
-    && gpg --batch --verify tini.asc /usr/local/bin/tini \
+    && gpg --batch --verify tini.asc /usr/bin/tini \
     && rm -rf "$GNUPGHOME" tini.asc \
-    && chmod +x /usr/local/bin/tini \
+    && chmod +x /usr/bin/tini \
     && rm -rf /tmp/* \
-    && useradd -m -s /bin/bash -g users -N -u "$CONDA_UID" "$CONDA_USER"
+    && useradd -m -N -u "$CONDA_UID" -g "$CONDA_GID" -s /bin/bash "$CONDA_USER"
 
-USER conda
+USER ${CONDA_USER}
 RUN cd "$CONDA_USER_HOME" \
-    && curl -fsSL -O "$CONDA_URL/$CONDA_INSTALLER" \
+    && curl --retry 3 -fsSL -O "$CONDA_URL/$CONDA_INSTALLER" \
     && echo "$CONDA_MD5  $CONDA_INSTALLER" | md5sum -c - \
     && bash "./$CONDA_INSTALLER" -b -p "$CONDA_USER_HOME/conda" \
     && rm -f "$CONDA_INSTALLER" \
-    && $CONDA_USER_HOME/conda/bin/conda config --system --add channels conda-forge \
-    && $CONDA_USER_HOME/conda/bin/conda clean --yes --tarballs --packages \
+    && $CONDA_DIR/bin/conda config --system --prepend channels conda-forge \
+    && $CONDA_DIR/bin/conda config --system --set auto_update_conda false \
+    && $CONDA_DIR/bin/conda config --system --set show_channel_urls true \
+    && $CONDA_DIR/bin/conda clean -tipsy \
+    && mkdir -p "$CONDA_USER_HOME/bin" \
     && mkdir -p "$CONDA_USER_HOME/work" \
     && mkdir -p "$CONDA_USER_HOME/.jupyter"
+ENV PATH=$CONDA_DIR/bin:$PATH \
+    HOME=$CONDA_USER_HOME
 
 WORKDIR "$CONDA_USER_HOME/work"
 ENTRYPOINT ["tini", "--"]
