@@ -36,12 +36,13 @@ RUN echo "deb ${REPO}/${DISTRO} ${CODENAME} main" \
          >> /etc/apt/sources.list \
     echo "deb ${REPO}/${DISTRO}-security ${CODENAME}/updates main" \
          >> /etc/apt/sources.list \
-    && apt-get update -yq --fix-missing && apt-get -yq dist-upgrade \
+    && apt-get update -yq --fix-missing \
     && apt-get install -yq --no-install-recommends locales \
     && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
     && locale-gen \
+    && apt-get install -yq --no-install-recommends apt-utils \
+    && apt-get -yq dist-upgrade \
     && apt-get install -yq --no-install-recommends \
-       apt-utils \
        bash-completion \
        bzip2 \
        ca-certificates \
