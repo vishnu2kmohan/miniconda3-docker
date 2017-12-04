@@ -93,8 +93,8 @@ ENTRYPOINT ["tini", "--"]
 CMD ["conda.sh"]
 
 # Add local files as late as possible to stay cache friendly
-COPY profile "$CONDA_USER_HOME/.profile"
-COPY bash_profile "$CONDA_USER_HOME/.bash_profile"
-COPY bashrc "$CONDA_USER_HOME/.bashrc"
-COPY dircolors "$CONDA_USER_HOME/.dircolors"
-COPY conda-home.sh /usr/local/bin/conda.sh
+COPY --chown="1000:100" profile "$CONDA_USER_HOME/.profile"
+COPY --chown="1000:100" bash_profile "$CONDA_USER_HOME/.bash_profile"
+COPY --chown="1000:100" bashrc "$CONDA_USER_HOME/.bashrc"
+COPY --chown="1000:100" dircolors "$CONDA_USER_HOME/.dircolors"
+COPY --chown="1000:100" conda-home.sh /usr/local/bin/conda.sh
