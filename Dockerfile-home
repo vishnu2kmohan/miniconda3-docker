@@ -1,13 +1,13 @@
-# debian:9.2 - linux; amd64
-# https://github.com/docker-library/repo-info/blob/master/repos/debian/tag-details.md#debian92
-FROM debian@sha256:26b2647845d66e20eeadf73d1c302a4ffd2cc9a74c39a52f2aced4f823484328
+# debian:9.3 - linux; amd64
+# https://github.com/docker-library/repo-info/blob/master/repos/debian/tag-details.md#debian93---linux-amd64
+FROM debian@sha256:02741df16aee1b81c4aaff4c48d75cc2c308bade918b22679df570c170feef7c
 
 MAINTAINER Vishnu Mohan <vishnu@mesosphere.com>
 
 ARG CONDA_DIR="/home/conda/conda"
 ARG CONDA_GID="100"
-ARG CONDA_INSTALLER="Miniconda3-4.3.30-Linux-x86_64.sh"
-ARG CONDA_MD5="0b80a152332a4ce5250f3c09589c7a81"
+ARG CONDA_INSTALLER="Miniconda3-4.3.31-Linux-x86_64.sh"
+ARG CONDA_MD5="7fe70b214bee1143e3e3f0467b71453c"
 ARG CONDA_UID="1000"
 ARG CONDA_URL="https://repo.continuum.io/miniconda"
 ARG CONDA_USER="conda"
