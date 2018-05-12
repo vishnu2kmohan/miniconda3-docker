@@ -1,35 +1,49 @@
-# debian:9.3 - linux; amd64
-# https://github.com/docker-library/repo-info/blob/master/repos/debian/tag-details.md#debian93---linux-amd64
-FROM debian@sha256:02741df16aee1b81c4aaff4c48d75cc2c308bade918b22679df570c170feef7c
+# debian:9.4 - linux; amd64
+# https://github.com/docker-library/repo-info/blob/master/repos/debian/tag-details.md#debian94---linux-amd64
+FROM debian@sha256:316ebb92ca66bb8ddc79249fb29872bece4be384cb61b5344fac4e84ca4ed2b2
 
-MAINTAINER Vishnu Mohan <vishnu@mesosphere.com>
-
-ARG CONDA_DIR="/home/conda/conda"
-ARG CONDA_GID="100"
-ARG CONDA_INSTALLER="Miniconda3-4.3.31-Linux-x86_64.sh"
-ARG CONDA_MD5="7fe70b214bee1143e3e3f0467b71453c"
-ARG CONDA_UID="1000"
-ARG CONDA_URL="https://repo.continuum.io/miniconda"
-ARG CONDA_USER="conda"
-ARG CONDA_USER_HOME="/home/conda"
-ARG DISTRO="debian"
+ARG BUILD_DATE
 ARG CODENAME="stretch"
+ARG CONDA_VERSION="4.5.1"
+ARG CONDA_DIR="/opt/conda"
+ARG CONDA_INSTALLER="Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh"
+ARG CONDA_MD5="0c28787e3126238df24c5d4858bd0744"
+ARG CONDA_URL="https://repo.continuum.io/miniconda"
+ARG DISTRO="debian"
+ARG DEBCONF_NONINTERACTIVE_SEEN="true"
 ARG DEBIAN_FRONTEND="noninteractive"
-ARG GPG_KEYSERVER="hkps://pgp.mit.edu"
+ARG GPG_KEYSERVER="hkps://zimmermann.mayfirst.org"
+ARG HOME=/root
+ARG LANG="en_US.UTF-8"
+ARG LANGUAGE="en_US.UTF-8"
+ARG LC_ALL="en_US.UTF-8"
 ARG REPO="http://cdn-fastly.deb.debian.org"
 ARG TINI_GPG_KEY="6380DC428747F6C393FEACA59A84159D7001A4E5"
 ARG TINI_URL="https://github.com/krallin/tini/releases/download"
-ARG TINI_VERSION="v0.16.1"
+ARG TINI_VERSION="v0.18.0"
+ARG VCS_REF
+
+LABEL maintainer="Vishnu Mohan <vishnu@mesosphere.com>" \
+      org.label-schema.build-date="${BUILD_DATE}" \
+      org.label-schema.name="Miniconda" \
+      org.label-schema.description="A mini version of Anaconda that includes just conda, its dependencies and Python" \
+      org.label-schema.url="https://conda.io" \
+      org.label-schema.vcs-ref="${VCS_REF}" \
+      org.label-schema.vcs-url="https://github.com/vishnu2kmohan/miniconda3-docker" \
+      org.label-schema.version="${CONDA_VERSION}" \
+      org.label-schema.schema-version="1.0"
 
 ENV CODENAME=${CODENAME:-"stretch"} \
-    CONDA_DIR=${CONDA_DIR:-"/home/conda/conda"} \
-    CONDA_USER=${CONDA_USER:-"conda"} \
-    CONDA_USER_HOME=${CONDA_USER_HOME:-"/home/conda"} \
+    CONDA_DIR=${CONDA_DIR:-"/opt/conda"} \
+    DEBCONF_NONINTERACTIVE_SEEN=${DEBCONF_NONINTERACTIVE_SEEN:-"true"} \
+    DEBIAN_FRONTEND=${DEBIAN_FRONTEND:-"noninteractive"} \
     DISTRO=${DISTRO:-"debian"} \
-    GPG_KEYSERVER=${GPG_KEYSERVER:-"hkps://pgp.mit.edu"} \
-    LANG="en_US.UTF-8" \
-    LANGUAGE="en_US.UTF-8" \
-    LC_ALL="en_US.UTF-8" \
+    GPG_KEYSERVER=${GPG_KEYSERVER:-"hkps://zimmermann.mayfirst.org"} \
+    HOME=${HOME:-"/root"} \
+    LANG=${LANG:-"en_US.UTF-8"} \
+    LANGUAGE=${LANGUAGE:-"en_US.UTF-8"} \
+    LC_ALL=${LC_ALL:-"en_US.UTF-8"} \
+    PATH="${CONDA_DIR}/bin:${PATH}" \
     SHELL="/bin/bash"
 
 RUN echo "deb ${REPO}/${DISTRO} ${CODENAME} main" \
@@ -48,54 +62,46 @@ RUN echo "deb ${REPO}/${DISTRO} ${CODENAME} main" \
        ca-certificates \
        curl \
        dirmngr \
-       fonts-dejavu \
-       fonts-liberation \
        git \
        gnupg \
        jq \
+       less \
        openssh-client \
+       procps \
+       rsync \
        sudo \
        unzip \
        vim \
        wget \
-    && apt-key adv --keyserver "$GPG_KEYSERVER" --recv-keys "$TINI_GPG_KEY" \
     && apt-get clean \
-    && rm -rf /var/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && usermod -u 99 nobody \
+    && addgroup --gid 99 nobody \
+    && usermod -g nobody nobody \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin" >> /etc/passwd
 
 RUN cd /tmp \
-    && curl --retry 3 -fsSL "$TINI_URL/$TINI_VERSION/tini" -o /usr/bin/tini \
-    && curl --retry 3 -fsSL -O "$TINI_URL/$TINI_VERSION/tini.asc" \
+    && apt-key adv --keyserver "${GPG_KEYSERVER}" --recv-keys "${TINI_GPG_KEY}" \
+    && curl --retry 3 -fsSL "${TINI_URL}/${TINI_VERSION}/tini" -o /usr/bin/tini \
+    && curl --retry 3 -fsSL -O "${TINI_URL}/${TINI_VERSION}/tini.asc" \
     && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --keyserver "$GPG_KEYSERVER" --recv-keys "$TINI_GPG_KEY" \
+    && gpg --keyserver "${GPG_KEYSERVER}" --recv-keys "${TINI_GPG_KEY}" \
     && gpg --batch --verify tini.asc /usr/bin/tini \
-    && rm -rf "$GNUPGHOME" tini.asc \
-    && chmod +x /usr/bin/tini \
-    && rm -rf /tmp/* \
-    && useradd -m -N -u "$CONDA_UID" -g "$CONDA_GID" -s /bin/bash "$CONDA_USER"
+    && rm -rf "${GNUPGHOME}" tini.asc \
+    && chmod +x /usr/bin/tini
 
-USER ${CONDA_USER}
-RUN cd "$CONDA_USER_HOME" \
-    && curl --retry 3 -fsSL -O "$CONDA_URL/$CONDA_INSTALLER" \
-    && echo "$CONDA_MD5  $CONDA_INSTALLER" | md5sum -c - \
-    && bash "./$CONDA_INSTALLER" -b -p "$CONDA_USER_HOME/conda" \
-    && rm -f "$CONDA_INSTALLER" \
-    && $CONDA_DIR/bin/conda config --system --prepend channels conda-forge \
-    && $CONDA_DIR/bin/conda config --system --set auto_update_conda false \
-    && $CONDA_DIR/bin/conda config --system --set show_channel_urls true \
-    && $CONDA_DIR/bin/conda clean -tipsy \
-    && mkdir -p "$CONDA_USER_HOME/bin" \
-    && mkdir -p "$CONDA_USER_HOME/work" \
-    && mkdir -p "$CONDA_USER_HOME/.jupyter"
-ENV PATH=$CONDA_DIR/bin:$PATH \
-    HOME=$CONDA_USER_HOME
+RUN cd /tmp \
+    && curl --retry 3 -fsSL -O "${CONDA_URL}/${CONDA_INSTALLER}" \
+    && echo "${CONDA_MD5}  ${CONDA_INSTALLER}" | md5sum -c - \
+    && bash "./${CONDA_INSTALLER}" -u -b -p "${CONDA_DIR}" \
+    && ${CONDA_DIR}/bin/conda config --system --prepend channels conda-forge \
+    && ${CONDA_DIR}/bin/conda config --system --set auto_update_conda false \
+    && ${CONDA_DIR}/bin/conda config --system --set show_channel_urls true \
+    && ${CONDA_DIR}/bin/conda update --json --all -yq \
+    && ${CONDA_DIR}/bin/conda clean --json -tipsy \
+    && rm -rf "${HOME}/.cache/pip" "/tmp/*"
 
-WORKDIR "$CONDA_USER_HOME/work"
-ENTRYPOINT ["tini", "--"]
-CMD ["conda.sh"]
-
-# Add local files as late as possible to stay cache friendly
-COPY --chown="1000:100" profile "$CONDA_USER_HOME/.profile"
-COPY --chown="1000:100" bash_profile "$CONDA_USER_HOME/.bash_profile"
-COPY --chown="1000:100" bashrc "$CONDA_USER_HOME/.bashrc"
-COPY --chown="1000:100" dircolors "$CONDA_USER_HOME/.dircolors"
-COPY --chown="1000:100" conda-home.sh /usr/local/bin/conda.sh
+COPY profile "/root/.profile"
+COPY bash_profile "/root/.bash_profile"
+COPY bashrc "/root/.bashrc"
+COPY dircolors "/root/.dircolors"
